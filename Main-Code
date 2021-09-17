@@ -1,0 +1,526 @@
+import pygame, sys
+from pygame.locals import *
+from pygame import mixer
+#This section of code imports all of the required tools that
+#will be utilised in the code
+mainClock = pygame.time.Clock()
+
+pygame.init()
+pygame.display.set_caption('Summon Him')
+#The pygame.init initizialtes the pygame window, the dimensions
+#have not been specified however the games name is Summon Him
+
+mixer.music.load('Josh Woodward - I Want To Destroy Something Beautiful.mp3')
+mixer.music.set_volume(0.3)
+mixer.music.play(-1)
+#This code ensures that music plays on startup, the -1 makes
+#the music repeat and the 'volume(0.3)' obviously reduces
+#the volume
+
+screensize = (600, 600)
+screen = pygame.display.set_mode((screensize),0,32)
+#This sets the screensize to 600, 600 and is used by pygame to create
+#The window application using this a a reference. The pygame.display.
+#set_mode uses the screensize dimensions and sets the framerate.
+
+bg = (93, 1, 2)
+red = (255, 0, 0) 
+black = (0, 0, 0)
+white = (255, 255, 255)
+#This defines commonly used colors under variable names to 
+#acess them quickly later on in the code
+#red == the colour red ect.
+
+#This part of the code is used to load and proccess all of the images
+#in the game, such as the main character image and the background image
+#Character = pygame.image.load(filename.png/jpg).convert alpha
+#Character = pygame.transform.scale(Character(x value, y value))
+bgimg = pygame.image.load('evilimage.jpg').convert_alpha()
+bgimg = pygame.transform.scale(bgimg, (screensize))
+cr1 = pygame.image.load('MainCharacter.png').convert_alpha()
+cr1 = pygame.transform.scale(cr1, (381, 700))
+cr2 = pygame.image.load('DemonImage.png').convert_alpha()
+cr2 = pygame.transform.scale(cr2, (360, 480))
+
+font = pygame.font.SysFont('Constantia', 30)
+#This defines the system font under the variable name, font
+#making it much easier to recall later on in the code 
+
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, 1, color)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+   
+    #This defines an object that deals with inputting text onto the
+    #game
+    # Inputs: draw_text('sample text', font, white, screen, 300, 100)
+    # Outputs: outputs the text onto on the screen
+   
+clicked = False
+#This defines clicked as false for use in the button class
+class button():
+		
+	#colours for button that will be used later on for a
+    #function
+	button_col = (255, 0, 0)
+	hover_col = (75, 225, 255)
+	click_col = (50, 150, 255)
+	text_col = black
+	width = 180
+	height = 70
+    #This also sets the text colour to black and the width and 
+    #height to their perspective sizes for the buttons being 180 and 70
+
+    # Function name and brief description
+    # Inputs: input(self, 190, 200, 'hello')
+    # Outputs: 
+
+	def __init__(self, x, y, text):
+		self.x = x
+		self.y = y
+		self.text = text
+    
+    
+	def draw_button(self):
+		global clicked
+		action = False
+
+		#get mouse position and sets it as a variable to use in the later code
+		pos = pygame.mouse.get_pos()
+
+		#create pygame Rectangle object for the button using
+		button_rect = Rect(self.x, self.y, self.width, self.height)
+		
+		#check mouseover and clicked conditions to see if a collision has
+        #occured if a collision has occured clicked == True
+		if button_rect.collidepoint(pos):
+			if pygame.mouse.get_pressed()[0] == 1:
+				clicked = True
+				pygame.draw.rect(screen, self.click_col, button_rect)
+			elif pygame.mouse.get_pressed()[0] == 0 and clicked == True:
+				clicked = False
+				action = True
+			else:
+				pygame.draw.rect(screen, self.hover_col, button_rect)
+		else:
+			pygame.draw.rect(screen, self.button_col, button_rect)
+		
+		#this draws lines on the buttons to add shading to them. It takes the x and
+        #y values of the rectangle already set up as a button and draws a black line
+        #on one side and white on the other.
+		pygame.draw.line(screen, white, (self.x, self.y), (self.x + self.width, self.y), 2)
+		pygame.draw.line(screen, white, (self.x, self.y), (self.x, self.y + self.height), 2)
+		pygame.draw.line(screen, black, (self.x, self.y + self.height), (self.x + self.width, self.y + self.height), 2)
+		pygame.draw.line(screen, black, (self.x + self.width, self.y), (self.x + self.width, self.y + self.height), 2)
+
+		#This draws the entered text in the button to be used as an image
+        #then returning action to return the value.
+		text_img = font.render(self.text, True, self.text_col)
+		text_len = text_img.get_width()
+		screen.blit(text_img, (self.x + int(self.width / 2) - int(text_len / 2), self.y + 25))
+		return action
+#This button class makes it easy to create a button but also blit that button onto the screen
+#TestButton = button(x.loc, y.loc, 'sampleText')
+
+
+#defines a function that is called on when pygame loads
+def pre_main_menu():
+    #Keeps the loop open while true 
+    while True:
+        
+        #Fills the screen with the bg color
+        #places bgimg on the screen at coordanates 0,0
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        
+       #calls upon the draw_text function and takes the desired text and colour and uses
+       #the already established font and screen variables.
+        draw_text('Click Anywhere To Continue', font, (255,255,255), screen, 20, 20)
+         
+        #sets up and ending to the loop if certain conditions are met
+        #for example pressing the escape button
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button ==1:
+                    click = True
+            
+            
+            #when clicked enters the function or 'screen' that acts as a new part
+            #of the game when the condition is met.
+            if click == True:
+                main_menu_main()
+        
+        pygame.display.update()
+        mainClock.tick(60)
+
+# defines the main menu
+def main_menu_main():
+
+    #this calls the buttons that are used in the code under a variable name that
+    #is easy to call again it also defines the text to be in the buttons and the
+    #location of the buttons
+    play = button(50, 100, 'Play?')
+    settings = button(50, 200, 'Options')
+    loadyboi = button(50, 300, 'Load')
+    quityboi = button(50, 400, 'Quit')
+    
+    running = True
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        #calls upon the draw_text function to draw the text
+        draw_text('Summon Him?', font, (255,255,255), screen, 20, 20)
+        # screen.blit(cr1, (0,0))
+        #blit or puts the image with changed style onto onto the page
+        
+        #if button is clicked, whilst calling the button function with a variable attached
+        #to tell the computer what button it wants displayed and what it does, in this case
+        #going to the game() variable
+        if play.draw_button():
+            game()
+        if settings.draw_button():
+            options()
+        if loadyboi.draw_button():
+            load()
+        if quityboi.draw_button():
+            pygame.quit()
+            sys.exit()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False	
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+        pygame.display.update()
+    pygame.quit()
+
+def game():
+
+    #More buttons under new names to allow the player to make ingame choices
+    #that change the story 
+    choice1 = button(200, 25, 'Yes')
+    choice2 = button(200, 125, 'No')
+    
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        screen.blit(cr1, (70, 250))
+
+        draw_text('Are You Ready To Summon Him', font, (white), screen, 100 , 500)
+
+        #does the same as before in the code, printing a button
+        if choice1.draw_button():
+            print('i have been pressed')
+            GameSummon()
+
+        if choice2.draw_button():
+            DontSummon()
+            
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+            
+
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+#acts as a different screen for the different choice that appears for the game
+#when a choice is made it will return to this function or DontSummon function
+def GameSummon():
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        screen.blit(cr1, (250, 250))
+    
+        draw_text('Thats good to hear', font, (white), screen, 100 , 450)
+        draw_text('Lets Begin', font, (white), screen, 100, 500)
+
+       
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button ==1:
+                    click = True
+            
+            
+            #when clicked enters the function or 'screen' that acts as a new part
+            #of the game when the condition is met.
+            if click == True:
+                GameSummonPath()
+           
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+def GameSummonPath():
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        screen.blit(cr2, (125, 0))
+    
+        draw_text('Amazing, you managed to summon the lord', font, (white), screen, 15 , 500)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button ==1:
+                    click = True
+            
+            
+            #when clicked enters the function or 'screen' that acts as a new part
+            #of the game when the condition is met.
+            if click == True:
+                main_menu_main()
+           
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+def DontSummon():
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        screen.blit(cr1, (250, 250))
+
+        draw_text('you are right it is too dangerous', font, (white), screen, 100 , 500)
+    
+        
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button ==1:
+                    click = True
+            
+            
+            #when clicked enters the function or 'screen' that acts as a new part
+            #of the game when the condition is met.
+            if click == True:
+                DontSummonPath()
+           
+        pygame.display.update()
+        mainClock.tick(60)
+
+def DontSummonPath():
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        screen.blit(cr1, (250, 250))
+    
+        draw_text('Lets Leave', font, (white), screen, 15 , 500)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button ==1:
+                    click = True
+            
+            
+            #when clicked enters the function or 'screen' that acts as a new part
+            #of the game when the condition is met.
+            if click == True:
+                main_menu_main()
+           
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+def easteregg():
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        screen.blit(cr1, (250, 250))
+
+        draw_text('Congratulations you found my easter egg', font, (white), screen, 25, 500)
+    
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+            
+        pygame.display.update()
+        mainClock.tick(60)
+
+#sets up the options page with buttons for the options screen that
+#that impact other bits of the code
+def options():
+    global font
+    #global font calls the global variable outside of the function so that it is 
+    #able to be changed
+    smallText = button(200, 50, 'Small Text')
+    mediumText = button(200, 200, 'Medium Text' )
+    largeText = button(200, 350, 'Large Text')
+    userFeedBack = button(200, 500, 'User Feedback')
+    
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+            
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+       
+        if smallText.draw_button():
+            font = pygame.font.SysFont('Constantia', 20)
+
+        if mediumText.draw_button():
+            font = pygame.font.SysFont('Constantia', 30)
+        
+        if largeText.draw_button():
+            font = pygame.font.SysFont('Constantia', 40)
+
+        if userFeedBack.draw_button():
+            userdetails()
+        
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+#loads a certain point in the game, and goes to that point in the game
+def userdetails():
+    input_box = pygame.Rect(100, 100, 140, 32)
+    color_inactive = pygame.Color('lightskyblue3')
+    color_active = pygame.Color('dodgerblue2')
+    color = color_inactive
+    active = False
+    text = ''
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            
+            screen.fill((bg))
+            # Render the current text.
+            txt_surface = font.render(text, True, color)
+            # Resize the box if the text is too long.
+            width = max(200, txt_surface.get_width()+10)
+            input_box.w = width
+            # Blit the text.
+            screen.blit(txt_surface, (input_box.x+5, input_box.y+5))
+            # Blit the input_box rect.
+            pygame.draw.rect(screen, color, input_box, 2)
+        
+            if event.type == pygame.QUIT:
+                running = False
+         
+            draw_text('What Do You Think Of The Game', font, (255,255,255), screen, 20, 20)
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if input_box.collidepoint(event.pos):
+                    active = not active
+                else:
+                    active = False
+                # Change the current color of the input box.
+                color = color_active if active else color_inactive
+            
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        print(text)
+                        text = ''
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+
+    
+
+        pygame.display.flip()
+        mainClock.tick(60)
+
+
+def load():
+
+    save1 = button(75, 200, 'Save 1')
+    save2 = button(325, 200, 'Save 2')
+    save3 = button(75, 350, 'Save 3')
+    save4 = button(325, 350, 'Save 4')
+    
+    running = True 
+    while running:
+        screen.fill((bg))
+        screen.blit(bgimg, (0, 0))
+        if save1.draw_button():
+            game()
+        if save2.draw_button():
+            GameSummon()
+        if save3.draw_button():
+            DontSummon()
+        if save4.draw_button():
+            easteregg()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False 
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+#calls the whole function with all of the bits inside of it such as DontSummon and
+#the main menu therefore defining the end of the code.
+pre_main_menu()
